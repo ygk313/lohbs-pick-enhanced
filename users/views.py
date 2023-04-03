@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.contrib.auth import logout
 from .models import *
 import json, datetime
 from orders.models import *
@@ -77,3 +79,12 @@ def update(request, id):
 
         user.profile.save()
         return redirect('users:main', id)
+
+# 프로필 삭제 
+@require_POST
+@login_required
+def delete(request, id):
+    request.user.delete()
+    logout(request)
+    return render(request, 'index.html')
+    

@@ -72,6 +72,12 @@
                 <div class="product_count">
                   <a class="button primary-btn" href="{% url 'users:edit' user_profile.id %}">회원정보 수정</a>
                 </div>
+                <form method="post" action="{% url 'users:delete' user_profile.id %}" >
+                    {% csrf_token %}
+                    <!-- <div class="product_count"> -->
+                      <button type="submit" class="button primary-btn">회원정보 삭제</button>
+                    <!-- </div> -->
+                </form>
             {% endif %}
           {% endif %}
 				</div>
