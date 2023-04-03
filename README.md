@@ -3,7 +3,6 @@
 
 ### 기획배경
 ![slide3](./readme-images/slide-3.PNG)
-기존에 개발했던 내용에 수정 내용을 추가합니다.
 
 ### 서비스 소개
 ![slide4](./readme-images/slide-4.PNG)
