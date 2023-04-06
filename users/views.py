@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.http import require_POST
-from django.contrib.auth import logout
+from django.contrib.auth import authenticate, logout
+from django.contrib.auth import login as auth_login
+
 from .models import *
 import json, datetime
 from orders.models import *
@@ -83,8 +86,31 @@ def update(request, id):
 # 프로필 삭제 
 @require_POST
 @login_required
-def delete(request, id):
-    request.user.delete()
+def delete(request):
+    # request.user.delete()
+    user = request.user
+    user.is_active = False
+    user.save()
+
     logout(request)
-    return render(request, 'index.html')
+    return redirect('main')
+
+# login기능
+def login(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request.POST)
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
     
+        if user:
+            if user.is_active:
+                auth_login(request, user)
+                return redirect('main')
+        else:
+            p = "아이디 혹은 비밀번호가 틀렸습니다."    
+            form = AuthenticationForm
+            return render(request, 'account/login.html', {'form':form, 'p' : p})
+    else:
+        form = AuthenticationForm
+    return render(request, 'account/login.html', {'form':form})
