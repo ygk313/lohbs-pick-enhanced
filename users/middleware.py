@@ -9,9 +9,9 @@ from django.http import JsonResponse
 # 인증 실패 예외 처리를 위함.
 from django.core.exceptions import PermissionDenied
 from django.http.response import Http404
-from user.utils.jwt import decode_jwt
+from users.utils.jwt import decode_jwt
 # 만료 토큰 예외 처리를 위함.
-from jwt.exceptions import ExpriedSignatureError
+from jwt.exceptions import ExpiredSignatureError
 
 class JsonWebTokenMiddleWare(object):
     def __init__(self, get_response):

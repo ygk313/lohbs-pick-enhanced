@@ -10,7 +10,7 @@ def encode_jwt(data):
     return jwt.encode(data, SECRET_KEY, algorithm=JWT_Algorithm).decode("utf-8")
 
 # jwt 토큰 복호화 - verify the jwt token signature and return the token claims
-def decode(access_token):
+def decode_jwt(access_token):
     return jwt.decode(
         access_token,
         SECRET_KEY,
