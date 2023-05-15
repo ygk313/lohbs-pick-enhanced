@@ -1,11 +1,20 @@
+from django.contrib import auth
+from users.utils.jwt import encode_jwt
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.http import require_POST
-from django.contrib.auth import authenticate, logout
-from django.contrib.auth import login as auth_login
+from django.contrib.auth import authenticate
+from django.contrib.auth import logout as auth_logout
+# from django.contrib.auth import login as auth_login
+from django.contrib.auth.models import AnonymousUser
+
+import datetime
+from users.utils.jwt import encode_jwt
+from json import loads
 
 from .models import *
+from .forms import *
 import json, datetime
 from orders.models import *
 import pdb
@@ -87,30 +96,74 @@ def update(request, id):
 @require_POST
 @login_required
 def delete(request):
-    # request.user.delete()
+
     user = request.user
     user.is_active = False
     user.save()
 
-    logout(request)
-    return redirect('main')
+    response = redirect('main')
+    response.delete_cookie('jwt')
+
+    return response
+
+# JWT 토큰 발행
+def generate_access_token(username):
+    # 토큰 발행일
+    iat = datetime.datetime.now()
+    # 토큰 만료일
+    exp = iat + datetime.timedelta(days=7)
+
+    data = {
+        "iat" : iat.timestamp(),
+        "exp" : exp.timestamp(),
+        "aud" : username,
+        "iss" : "LOHBS_PICK Web Backend"
+    }
+    
+    return encode_jwt(data)
+
+def login_page(request):
+    form = AuthenticationForm
+    return render(request, 'account/login.html', {'form':form})
 
 # login기능
 def login(request):
+    data ={}
+    form = AuthenticationForm
+
     if request.method == "POST":
         form = AuthenticationForm(request.POST)
         username = request.POST['username']
         password = request.POST['password']
-        user = authenticate(username=username, password=password)
-    
+        user = authenticate(username = username, password = password)
+        
         if user:
+            token = generate_access_token(username)
+
             if user.is_active:
-                auth_login(request, user)
-                return redirect('main')
+                # auth_login(request, user)
+                # user.is_active = True
+
+                response = redirect('main')
+                response.set_cookie(key="jwt", value=token, httponly=True)
+
+                # pdb.set_trace()
+                return response
         else:
             p = "아이디 혹은 비밀번호가 틀렸습니다."    
-            form = AuthenticationForm
             return render(request, 'account/login.html', {'form':form, 'p' : p})
+
+    return redirect(login_page)
+
+# logout 기능
+def logout(request):
+    
+    if request.method == "POST":
+
+        response = redirect('main')
+        response.delete_cookie('jwt')
+
+        return response 
+
     else:
-        form = AuthenticationForm
-    return render(request, 'account/login.html', {'form':form})
+        return render(request, 'account/logout.html')

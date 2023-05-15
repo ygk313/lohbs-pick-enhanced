@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from products.models import Product
 from picks.models import *
+import pdb
 
 def main(request):
     products = Product.objects.all()[0:8]

@@ -7,7 +7,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # jwt 토큰 생성
 def encode_jwt(data):
     # jwt.encode의 경우 반환 값이 바이트 스트링이기때문에, utf-8 문자열로 변환
-    return jwt.encode(data, SECRET_KEY, algorithm=JWT_Algorithm).decode("utf-8")
+    return jwt.encode(data, SECRET_KEY, algorithm=JWT_Algorithm)
 
 # jwt 토큰 복호화 - verify the jwt token signature and return the token claims
 def decode_jwt(access_token):
@@ -16,5 +16,5 @@ def decode_jwt(access_token):
         SECRET_KEY,
         algorithms=[JWT_Algorithm],
         issuer = "LOHBS_PICK Web Backend",
-        options = {"verify_aud" : False},
+        options = {"verify_aud" : False, "verify_iat":False},
     )
