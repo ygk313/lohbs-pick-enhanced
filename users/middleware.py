@@ -1,19 +1,29 @@
 # 인증이 필요한 요청이 올 때 토큰을 확인하기
-# 토큰을 복호화하기
+# 토큰을 복호화하
 # 복호화한 토큰의 내용이 유효한지 확인하기
 
-from os import access
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 # 인증실패 시 Response를 반환하기 위함
 from http import HTTPStatus
 from django.http import JsonResponse
 # 인증 실패 예외 처리를 위함.
 from django.core.exceptions import PermissionDenied
-from django.http.response import Http404
+# from django.http.response import Http404
 from users.utils.jwt import decode_jwt
 # 만료 토큰 예외 처리를 위함.
 from jwt.exceptions import ExpiredSignatureError
+from django.utils.functional import SimpleLazyObject
+
 import pdb
+
+def get_user(request, username):
+    
+    if not hasattr(request, "_cached_user"):
+        user = None
+        user = User.objects.get(username = username)
+        request._cached_user = user or AnonymousUser()
+    
+    return request._cached_user
 
 class JsonWebTokenMiddleWare(object):
     def __init__(self, get_response):
@@ -39,8 +49,8 @@ class JsonWebTokenMiddleWare(object):
                 if not username:
                     raise PermissionDenied()
 
-                user = User.objects.get(username=username)
-                request.user = user
+                # user = User.objects.get(username=username)
+                request.user = SimpleLazyObject(lambda: get_user(request, username))
                 # pdb.set_trace()
 
             response = self.get_response(request)
